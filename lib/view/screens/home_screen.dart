@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../api/apis.dart';
 import '../../helper/dialogs.dart';
@@ -73,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Scaffold(
           //app bar
           appBar: AppBar(
+            backgroundColor: Theme.of(context).primaryColor,
             leading: const Icon(CupertinoIcons.home),
             title: _isSearching
                 ? TextField(
@@ -96,7 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                   )
-                : const Text('We Chat'),
+                // : const Text('E-Chat'),
+                : Image.asset("images/e_chat.png",color: Colors.white,height: 20.h,width: 100.w,fit: BoxFit.contain,),
             actions: [
               //search user button
               IconButton(
@@ -128,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   _addChatUserDialog();
                 },
-                child: const Icon(Icons.add_comment_rounded)),
+                child: Image.asset("images/create_chat.png",height: 50.h,width: 50.w,fit: BoxFit.contain,),),
           ),
 
           //body

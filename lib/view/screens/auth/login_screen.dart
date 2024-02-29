@@ -1,8 +1,10 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:chat_app/view/screens/auth/otp_verification_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../api/apis.dart';
@@ -97,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
       //app bar
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Welcome to We Chat'),
+        title: const Text('Welcome to E-Chat'),
       ),
 
       //body
@@ -108,9 +110,46 @@ class _LoginScreenState extends State<LoginScreen> {
             right: _isAnimate ? mq.width * .25 : -mq.width * .5,
             width: mq.width * .5,
             duration: const Duration(seconds: 1),
-            child: Image.asset('images/icon.png')),
+            child: Image.asset('images/e_chat.png')),
 
         //google login button
+        Positioned(
+            bottom: mq.height * .3,
+            left: mq.width * .05,
+            width: mq.width * .9,
+            height: mq.height * .2,
+            child: Column(
+              children: [
+                TextFormField(
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    prefixIcon: Image.asset("images/phone.png",height: 30.h,width: 30.w,fit: BoxFit.contain,),
+                    labelText: 'Phone Number',
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xff8C8AFF), // Customize the color if needed
+                      ),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blue, // Customize the color if needed
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h,),
+                ElevatedButton(
+                  onPressed: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage())),
+                  child: Text("Send Otp",style: TextStyle(fontSize: 16.sp),),
+                  style: ElevatedButton.styleFrom(
+                    fixedSize: Size(197.w, 42.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24.0.sp), // Adjust the radius as needed
+                    ),
+                  ),
+                )
+              ],
+            )),
         Positioned(
             bottom: mq.height * .15,
             left: mq.width * .05,
@@ -118,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
             height: mq.height * .06,
             child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 223, 255, 187),
+                    backgroundColor: Color(0xff8C8AFF),
                     shape: const StadiumBorder(),
                     elevation: 1),
                 onPressed: () {

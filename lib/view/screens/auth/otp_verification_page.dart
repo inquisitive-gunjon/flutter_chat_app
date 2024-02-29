@@ -81,12 +81,12 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 // ),
                 Align(
                     alignment: Alignment.center,
-                    child: Image.asset("assets/images/e_chat.png",height: 100.h,width: 200.w,fit: BoxFit.contain,)
+                    child: Image.asset("images/e_chat.png",height: 100.h,width: 200.w,fit: BoxFit.contain,)
                 ),
                 SizedBox(height: 5.h,),
                 Align(
                     alignment: Alignment.center,
-                    child: Image.asset("assets/images/correct.png",height: 100.h,width: 100.w,fit: BoxFit.contain,)
+                    child: Image.asset("images/correct.png",height: 100.h,width: 100.w,fit: BoxFit.contain,)
                 ),
                 SizedBox(height: 30.h,),
                 Text("Please try again if the code is not received or has expired",style: TextStyle(
