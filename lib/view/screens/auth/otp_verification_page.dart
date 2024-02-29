@@ -1,7 +1,9 @@
 
 
 import 'dart:async';
+import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -9,8 +11,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pin_input_text_field/pin_input_text_field.dart';
 
+import '../../../api/apis.dart';
+
 class OtpVerificationPage extends StatefulWidget {
-  const OtpVerificationPage({Key? key}) : super(key: key);
+   OtpVerificationPage({Key? key,required this.verificationId}) : super(key: key);
+
+  String? verificationId;
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -18,7 +24,7 @@ class OtpVerificationPage extends StatefulWidget {
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
-  final TextEditingController _pinEditingController = TextEditingController();
+  final TextEditingController otpController = TextEditingController();
   Timer? _resendTimer;
   int _resendDuration = 180; // 3 minutes in seconds
   bool _isResendButtonEnabled = false;
@@ -99,9 +105,9 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: PinInputTextField(
-                        pinLength: 4,
+                        pinLength: 6,
                         keyboardType: TextInputType.number,
-                        controller: _pinEditingController,
+                        controller: otpController,
                         decoration: BoxLooseDecoration(
                           strokeColorBuilder: PinListenColorBuilder(Colors.blue,Colors.blue),
                           radius: Radius.circular(8),
@@ -134,7 +140,24 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     : Align(alignment: Alignment.center,child: Text('Resend OTP in $_resendDuration seconds')),
                 SizedBox(height: 20.h,),
                 ElevatedButton(
-                  onPressed: ()=>null,
+                  onPressed: ()async{
+                    // Create a PhoneAuthCredential with the code
+                    try{
+                      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                          verificationId: widget.verificationId!,
+                          smsCode: otpController.text
+                      );
+
+                      // Sign the user in (or link) with the credential
+                      await APIs.auth.signInWithCredential(credential);
+                      log("Successfully Loged In");
+                      log("Successfully Loged In");
+                      log("Successfully Loged In");
+                      log("get user info:${APIs.user.toString()}");
+                    }catch(ex){
+                      log(ex.toString());
+                    }
+                  },
                       // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ChatInbox())),
                   child: Text("Next",style: TextStyle(fontSize: 16.sp),),
                   style: ElevatedButton.styleFrom(

@@ -22,6 +22,37 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isAnimate = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  String _phoneNumber = '';
+
+  void _submitForm() async{
+    if (_formKey.currentState!.validate()) {
+      await APIs.auth.verifyPhoneNumber(
+        phoneNumber: _phoneNumberController.text,
+        verificationCompleted: (PhoneAuthCredential credential) {
+        },
+        verificationFailed: (FirebaseAuthException e) {},
+        codeSent: (String verificationId, int? resendToken) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage(verificationId: verificationId,)));
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
+      );
+      // Form is valid, you can handle phone number submission here
+
+      log('Phone number submitted: $_phoneNumber');
+    }
+  }
+
+  String? _validatePhoneNumber(String value) {
+    // Validate Bangladesh phone number
+    String pattern = r'^\+8801[3-9]\d{8}$';
+    RegExp regex = RegExp(pattern);
+    if (!regex.hasMatch(value)) {
+      return 'Enter a valid Bangladesh phone number';
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -106,9 +137,10 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(children: [
         //app logo
         AnimatedPositioned(
-            top: mq.height * .15,
+            top: mq.height * .05,
             right: _isAnimate ? mq.width * .25 : -mq.width * .5,
             width: mq.width * .5,
+            bottom: mq.height * .6,
             duration: const Duration(seconds: 1),
             child: Image.asset('images/e_chat.png')),
 
@@ -118,37 +150,44 @@ class _LoginScreenState extends State<LoginScreen> {
             left: mq.width * .05,
             width: mq.width * .9,
             height: mq.height * .2,
-            child: Column(
-              children: [
-                TextFormField(
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    prefixIcon: Image.asset("images/phone.png",height: 30.h,width: 30.w,fit: BoxFit.contain,),
-                    labelText: 'Phone Number',
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xff8C8AFF), // Customize the color if needed
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _phoneNumberController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      prefixIcon: Image.asset("images/phone.png",height: 30.h,width: 30.w,fit: BoxFit.contain,),
+                      labelText: 'Phone Number',
+                      border: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Color(0xff8C8AFF), // Customize the color if needed
+                        ),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.blue, // Customize the color if needed
+                        ),
                       ),
                     ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.blue, // Customize the color if needed
+                    validator:(value) => _validatePhoneNumber(value!),
+                    onSaved: (value) => _phoneNumber = value!,
+                  ),
+                  SizedBox(height: 20.h,),
+                  ElevatedButton(
+                    onPressed:_submitForm,
+                    // onPressed: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage())),
+                    child: Text("Send Otp",style: TextStyle(fontSize: 16.sp),),
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: Size(197.w, 42.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24.0.sp), // Adjust the radius as needed
                       ),
                     ),
-                  ),
-                ),
-                SizedBox(height: 20.h,),
-                ElevatedButton(
-                  onPressed: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage())),
-                  child: Text("Send Otp",style: TextStyle(fontSize: 16.sp),),
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(197.w, 42.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24.0.sp), // Adjust the radius as needed
-                    ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             )),
         Positioned(
             bottom: mq.height * .15,
