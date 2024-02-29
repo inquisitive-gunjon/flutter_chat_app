@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "395881301876",
+    "project_id": "chat-app-e9f41",
+    "storage_bucket": "chat-app-e9f41.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:395881301876:android:b683a8cfd1fd0439c68e21",
+        "android_client_info": {
+          "package_name": "com.gunjon.chatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "395881301876-jobgc5n36dssvt6gvc9hrg1ln4qmmgrt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gunjon.chatapp",
+            "certificate_hash": "4e87526858ff06de02114db7bca157013a9b0044"
+          }
+        },
+        {
+          "client_id": "395881301876-lhln2ulpuln6kpho6ano46ligdicsaqq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjS1YTMSXbaaXrUgfuDgyXqT2O95cKU8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "395881301876-lhln2ulpuln6kpho6ano46ligdicsaqq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "395881301876-hkq8nmrv0qg99b4cjrgie8lrepfaup0r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gunjon.chatapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
