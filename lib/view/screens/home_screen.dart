@@ -241,8 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 maxLines: null,
                 onChanged: (value) => email = value,
                 decoration: InputDecoration(
-                    hintText: 'Email Id',
-                    prefixIcon:  Icon(Icons.email, color: Theme.of(context).primaryColor),
+                    hintText: 'Email Id or Phone',
+                    prefixIcon:  Icon(Icons.add, color: Theme.of(context).primaryColor),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),

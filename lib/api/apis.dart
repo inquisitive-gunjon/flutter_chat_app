@@ -186,10 +186,10 @@ class APIs {
   }
 
   // for adding an chat user for our conversation
-  static Future<bool> addChatUser(String email) async {
+  static Future<bool> addChatUser(String emailOrPhone) async {
     final data = await firestore
         .collection('users')
-        .where('email', isEqualTo: email)
+        .where(emailOrPhone.contains("@")?'email':'phone', isEqualTo: emailOrPhone)
         .get();
 
     log('data: ${data.docs}');
