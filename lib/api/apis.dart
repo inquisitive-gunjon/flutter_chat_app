@@ -3,10 +3,13 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as random;
 
+import 'package:chat_app/view/screens/auth/otp_verification_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import '../models/chat_user.dart';
@@ -37,6 +40,55 @@ class APIs {
       lastActive: '',
       pushToken: ''
   );
+
+  // for sending otp button
+  static sendOtp(String phoneNo,BuildContext context)async{
+    await auth.verifyPhoneNumber(
+      phoneNumber: phoneNo,
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: (PhoneAuthCredential credential) {
+      },
+      verificationFailed: (FirebaseAuthException e) {},
+      codeSent: (String verificationId, int? resendToken) {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage(verificationId: verificationId,phoneNo: phoneNo,)));
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
+    // Navigator.of(context).pop();
+  }
+
+  //for resend otp button
+  static reSendOtp(String phoneNo,BuildContext context)async{
+    await auth.verifyPhoneNumber(
+      phoneNumber: phoneNo,
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: (PhoneAuthCredential credential) {
+      },
+      verificationFailed: (FirebaseAuthException e) {},
+      codeSent: (String verificationId, int? resendToken) {
+        // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage(verificationId: verificationId,)));
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+
+      },
+    );
+  }
+
+  //  otp authentication and return usercredential
+  static Future<UserCredential?> otpAuthentication(String verificationId,String smsCode)async{
+
+    try{
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+          verificationId: verificationId,
+          smsCode: smsCode
+      );
+
+      // Sign the user in (or link) with the credential
+      return await APIs.auth.signInWithCredential(credential);
+    }catch(ex){
+      log(ex.toString());
+    }
+  }
 
 
 
@@ -185,7 +237,7 @@ class APIs {
 
     final chatUser = ChatRoom(
         id: user.uid,
-        name: user.displayName.toString(),
+        name: user.displayName??user.phoneNumber.toString(),
         email: user.email.toString(),
         phone: user.phoneNumber.toString(),
         members: [],

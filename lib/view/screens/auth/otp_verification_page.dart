@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:chat_app/helper/dialogs.dart';
+import 'package:chat_app/view/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,9 +16,10 @@ import 'package:pin_input_text_field/pin_input_text_field.dart';
 import '../../../api/apis.dart';
 
 class OtpVerificationPage extends StatefulWidget {
-   OtpVerificationPage({Key? key,required this.verificationId}) : super(key: key);
+   OtpVerificationPage({Key? key,required this.verificationId,required this.phoneNo}) : super(key: key);
 
   String? verificationId;
+  String? phoneNo;
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -26,7 +29,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   final TextEditingController otpController = TextEditingController();
   Timer? _resendTimer;
-  int _resendDuration = 180; // 3 minutes in seconds
+  int _resendDuration = 60; // 3 minutes in seconds
   bool _isResendButtonEnabled = false;
 
   @override
@@ -57,13 +60,43 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
   void resendOtp() {
     // Add logic to resend OTP here
     // For example, you can reset the timer and disable the button again
+    APIs.reSendOtp(widget.phoneNo!, context);
     setState(() {
-      _resendDuration = 180;
+      _resendDuration = 60;
       _isResendButtonEnabled = false;
     });
 
     startResendTimer();
   }
+
+
+  _handleNextBtnClick(String verificationId,String smsCode) {
+    //for showing progress bar
+    Dialogs.showProgressBar(context);
+
+    APIs.otpAuthentication(verificationId,smsCode).then((user) async {
+      log("Successfully Loged In");
+      log("get user info:${user.toString()}");
+      //for hiding progress bar
+      Navigator.pop(context);
+
+      if (user != null) {
+        log('\nUser: ${user.user}');
+        log('\nUserAdditionalInfo: ${user.additionalUserInfo}');
+
+        if ((await APIs.userExists())) {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+        } else {
+          await APIs.createUser().then((value) {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+          });
+        }
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -142,21 +175,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                 ElevatedButton(
                   onPressed: ()async{
                     // Create a PhoneAuthCredential with the code
-                    try{
-                      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                          verificationId: widget.verificationId!,
-                          smsCode: otpController.text
-                      );
-
-                      // Sign the user in (or link) with the credential
-                      await APIs.auth.signInWithCredential(credential);
-                      log("Successfully Loged In");
-                      log("Successfully Loged In");
-                      log("Successfully Loged In");
-                      log("get user info:${APIs.user.toString()}");
-                    }catch(ex){
-                      log(ex.toString());
-                    }
+                    _handleNextBtnClick(widget.verificationId!,otpController.text);
                   },
                       // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>ChatInbox())),
                   child: Text("Next",style: TextStyle(fontSize: 16.sp),),

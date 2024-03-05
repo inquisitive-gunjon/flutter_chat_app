@@ -26,21 +26,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   String _phoneNumber = '';
 
-  void _submitForm() async{
+  void _submitForm(){
     if (_formKey.currentState!.validate()) {
-      await APIs.auth.verifyPhoneNumber(
-        phoneNumber: _phoneNumberController.text,
-        verificationCompleted: (PhoneAuthCredential credential) {
-        },
-        verificationFailed: (FirebaseAuthException e) {},
-        codeSent: (String verificationId, int? resendToken) {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context)=>OtpVerificationPage(verificationId: verificationId,)));
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
+       APIs.sendOtp(_phoneNumberController.text, context);
       // Form is valid, you can handle phone number submission here
 
-      log('Phone number submitted: $_phoneNumber');
+      log('Phone number submitted: $_phoneNumberController.text');
     }
   }
 
@@ -63,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isAnimate = true);
     });
   }
+
 
   // handles google login button click
   _handleGoogleBtnClick() {
@@ -172,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     validator:(value) => _validatePhoneNumber(value!),
-                    onSaved: (value) => _phoneNumber = value!,
+                    // onSaved: (value) => _phoneNumber = value!,
                   ),
                   SizedBox(height: 20.h,),
                   ElevatedButton(
