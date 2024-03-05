@@ -16,7 +16,7 @@ import '../widgets/message_card.dart';
 import 'view_profile_screen.dart';
 
 class ChatScreen extends StatefulWidget {
-  final ChatUser user;
+  final ChatRoom user;
 
   const ChatScreen({super.key, required this.user});
 
@@ -149,7 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
             builder: (context, snapshot) {
               final data = snapshot.data?.docs;
               final list =
-                  data?.map((e) => ChatUser.fromJson(e.data())).toList() ?? [];
+                  data?.map((e) => ChatRoom.fromJson(e.data())).toList() ?? [];
 
               return Row(
                 children: [
@@ -300,12 +300,10 @@ class _ChatScreenState extends State<ChatScreen> {
               if (_textController.text.isNotEmpty) {
                 if (_list.isEmpty) {
                   //on first message (add user to my_user collection of chat user)
-                  APIs.sendFirstMessage(
-                      widget.user, _textController.text, Type.text);
+                  APIs.sendFirstMessage(widget.user, _textController.text, Type.text);
                 } else {
                   //simply send message
-                  APIs.sendMessage(
-                      widget.user, _textController.text, Type.text);
+                  APIs.sendMessage(widget.user, _textController.text, Type.text);
                 }
                 _textController.text = '';
               }

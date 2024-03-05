@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:chat_app/view/screens/group_create_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,10 +23,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // for storing all users
-  List<ChatUser> _list = [];
+  List<ChatRoom> _list = [];
 
   // for storing searched items
-  final List<ChatUser> _searchList = [];
+  final List<ChatRoom> _searchList = [];
   // for storing search status
   bool _isSearching = false;
 
@@ -167,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         case ConnectionState.done:
                           final data = snapshot.data?.docs;
                           _list = data
-                                  ?.map((e) => ChatUser.fromJson(e.data()))
+                                  ?.map((e) => ChatRoom.fromJson(e.data()))
                                   .toList() ??
                               [];
 
@@ -208,21 +209,30 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              contentPadding: const EdgeInsets.only(
-                  left: 24, right: 24, top: 20, bottom: 10),
+              contentPadding:  EdgeInsets.only(
+                  left: 24.w, right: 24.w, top: 20.h, bottom: 10.h),
 
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
 
               //title
               title: Row(
-                children: const [
+                children:  [
                   Icon(
                     Icons.person_add,
                     color: Colors.blue,
-                    size: 28,
+                    size: 15.sp,
                   ),
-                  Text('  Add User')
+                  Text(' Add User',style: TextStyle(fontSize: 15.sp),),
+                  Spacer(),
+                  ElevatedButton(
+                      onPressed: () {
+                        //hide alert dialog
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const GroupCreateScreen()));
+                      },
+                      child:  Text('Create Group',
+                          style: TextStyle(color: Colors.white, fontSize: 16))),
+
                 ],
               ),
 
@@ -232,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onChanged: (value) => email = value,
                 decoration: InputDecoration(
                     hintText: 'Email Id',
-                    prefixIcon: const Icon(Icons.email, color: Colors.blue),
+                    prefixIcon:  Icon(Icons.email, color: Theme.of(context).primaryColor),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -245,8 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       //hide alert dialog
                       Navigator.pop(context);
                     },
-                    child: const Text('Cancel',
-                        style: TextStyle(color: Colors.blue, fontSize: 16))),
+                    child: Text('Cancel',
+                        style: TextStyle( color: Theme.of(context).primaryColor, fontSize: 16))),
 
                 //add button
                 MaterialButton(
@@ -262,9 +272,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         });
                       }
                     },
-                    child: const Text(
+                    child:  Text(
                       'Add',
-                      style: TextStyle(color: Colors.blue, fontSize: 16),
+                      style: TextStyle( color: Theme.of(context).primaryColor, fontSize: 16),
                     ))
               ],
             ));

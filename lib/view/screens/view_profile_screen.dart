@@ -9,7 +9,7 @@ import '../../models/chat_user.dart';
 
 //view profile screen -- to view profile of user
 class ViewProfileScreen extends StatefulWidget {
-  final ChatUser user;
+  final ChatRoom user;
 
   const ViewProfileScreen({super.key, required this.user});
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as random;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,16 +23,52 @@ class APIs {
   static FirebaseStorage storage = FirebaseStorage.instance;
 
   // for storing self information
-  static ChatUser me = ChatUser(
+  static ChatRoom me = ChatRoom(
       id: user.uid,
       name: user.displayName.toString(),
       email: user.email.toString(),
+      phone: user.phoneNumber.toString(),
+      members: [],
       about: "Hey, I'm using E-Chat",
       image: user.photoURL.toString(),
       createdAt: '',
       isOnline: false,
+      isGroup: false,
       lastActive: '',
-      pushToken: '');
+      pushToken: ''
+  );
+
+
+
+
+  //group name
+  static String groupName=user.displayName!;
+  //for user id list for group chat
+  static List<String> userIdList =["${user.uid}"];
+  // add user in group list
+  static void addUserId(String chatRoomId, ChatRoom chatRoom){
+    if(userIdList.contains(chatRoomId)){
+      return;
+    }
+    else{
+      groupName=groupName+","+chatRoom.name;
+      userIdList.add(chatRoomId);
+    }
+  }
+  // remove user in group list
+  static void removeUserId(String chatRoomId){
+    userIdList.remove(chatRoomId);
+  }
+  //clear userIdList
+  static void clearUserIdList(){
+    groupName=user.displayName!;
+    userIdList.clear();
+    userIdList =["${user.uid}"];
+  }
+
+
+
+
 
   // to return current user
   static User get user => auth.currentUser!;
@@ -63,7 +100,7 @@ class APIs {
 
   // for sending push notification
   static Future<void> sendPushNotification(
-      ChatUser chatUser, String msg) async {
+      ChatRoom chatUser, String msg) async {
     try {
       final body = {
         "to": chatUser.pushToken,
@@ -125,11 +162,12 @@ class APIs {
     }
   }
 
+
   // for getting current user info
   static Future<void> getSelfInfo() async {
     await firestore.collection('users').doc(user.uid).get().then((user) async {
       if (user.exists) {
-        me = ChatUser.fromJson(user.data()!);
+        me = ChatRoom.fromJson(user.data()!);
         await getFirebaseMessagingToken();
 
         //for setting user status to active
@@ -145,21 +183,95 @@ class APIs {
   static Future<void> createUser() async {
     final time = DateTime.now().millisecondsSinceEpoch.toString();
 
-    final chatUser = ChatUser(
+    final chatUser = ChatRoom(
         id: user.uid,
         name: user.displayName.toString(),
         email: user.email.toString(),
+        phone: user.phoneNumber.toString(),
+        members: [],
         about: "Hey, I'm using E-Chat",
         image: user.photoURL.toString(),
         createdAt: time,
         isOnline: false,
+        isGroup: false,
         lastActive: time,
-        pushToken: '');
+        pushToken: '',);
 
     return await firestore
         .collection('users')
         .doc(user.uid)
         .set(chatUser.toJson());
+  }
+
+  // for creating a new group
+  static Future<void> createGroup(List<dynamic> userList) async {
+    final time = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final id=generateRandomString(28);
+    final chatUser = ChatRoom(
+      id: id,
+      name: groupName,
+      email: "",
+      phone: "",
+      members: userList,
+      about: "Hey, we are using E-Chat",
+      image: "https://firebasestorage.googleapis.com/v0/b/chat-app-e9f41.appspot.com/o/images%2Fgroupchat.png?alt=media&token=1db814bb-fd38-4225-a9b8-027afc5fabcd",
+      createdAt: time,
+      isOnline: false,
+      isGroup: true,
+      lastActive: time,
+      pushToken: '',);
+
+    await firestore
+        .collection('users')
+        .doc(id)
+        .set(chatUser.toJson()).then((value) async{
+            for (var uId in userList) {
+
+              final data = await firestore
+                  .collection('users')
+                  .where('members', arrayContains: uId)
+                  .get();
+
+              log('data: ${data.docs.first.id}');
+
+              if (data.docs.isNotEmpty && data.docs.first.id != uId) {
+                //user exists
+
+                log('user exists: ${data.docs.first.data()}');
+                log('user exists: ${data.docs.first.data()}');
+                log('user exists: ${data.docs.first.data()}');
+                log('user exists: ${data.docs.first.data()}');
+
+                firestore
+                    .collection('users')
+                    .doc(uId)
+                    .collection('my_users')
+                    .doc(data.docs.first.id)
+                    .set({});
+
+                // return true;
+              } else {
+                //user doesn't exists
+
+                // return false;
+              }
+            }
+        });
+
+
+  }
+
+  static String generateRandomString(int length) {
+    const String chars = "abcdefghijklmnopqrstuvwxyz0123456789"; // You can customize the characters in the string
+
+    random.Random r= random.Random();
+    return String.fromCharCodes(
+      Iterable.generate(
+        length,
+            (_) => chars.codeUnitAt(r.nextInt(chars.length)),
+      ),
+    );
   }
 
   // for getting id's of known users from firestore database
@@ -172,23 +284,18 @@ class APIs {
   }
 
   // for getting all users from firestore database
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(
-      List<String> userIds) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(List<String> userIds) {
     log('\nUserIds: $userIds');
 
     return firestore
         .collection('users')
-        .where('id',
-            whereIn: userIds.isEmpty
-                ? ['']
-                : userIds) //because empty list throws an error
+        .where('id', whereIn: userIds.isEmpty ? [''] : userIds) //because empty list throws an error
         // .where('id', isNotEqualTo: user.uid)
         .snapshots();
   }
 
   // for adding an user to my user when first message is send
-  static Future<void> sendFirstMessage(
-      ChatUser chatUser, String msg, Type type) async {
+  static Future<void> sendFirstMessage(ChatRoom chatUser, String msg, Type type) async {
     await firestore
         .collection('users')
         .doc(chatUser.id)
@@ -231,7 +338,7 @@ class APIs {
 
   // for getting specific user info
   static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(
-      ChatUser chatUser) {
+      ChatRoom chatUser) {
     return firestore
         .collection('users')
         .where('id', isEqualTo: chatUser.id)
@@ -252,66 +359,75 @@ class APIs {
   // chats (collection) --> conversation_id (doc) --> messages (collection) --> message (doc)
 
   // useful for getting conversation id
-  static String getConversationID(String id) => user.uid.hashCode <= id.hashCode
-      ? '${user.uid}_$id'
-      : '${id}_${user.uid}';
+  static String getConversationID(String id, bool isGroup) {
+    if(isGroup){
+      return id;
+    }else{
+      return user.uid.hashCode <= id.hashCode ? '${user.uid}_$id' : '${id}_${user.uid}';
+
+    }
+
+  }
 
   // for getting all messages of a specific conversation from firestore database
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(
-      ChatUser user) {
-    return firestore
-        .collection('chats/${getConversationID(user.id)}/messages/')
-        .orderBy('sent', descending: true)
-        .snapshots();
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessages(ChatRoom room) {
+    if(room.isGroup){
+      return firestore
+          .collection('chats/${getConversationID(room.id,true)}/messages/')
+          .orderBy('sent', descending: true)
+          .snapshots();
+    }else{
+      return firestore
+          .collection('chats/${getConversationID(room.id,false)}/messages/')
+          .orderBy('sent', descending: true)
+          .snapshots();
+    }
   }
 
   // for sending message
-  static Future<void> sendMessage(
-      ChatUser chatUser, String msg, Type type) async {
+  static Future<void> sendMessage(ChatRoom chatRoom, String msg, Type type) async {
     //message sending time (also used as id)
     final time = DateTime.now().millisecondsSinceEpoch.toString();
 
     //message to send
     final Message message = Message(
-        toId: chatUser.id,
+        toId: chatRoom.id,
         msg: msg,
         read: '',
         type: type,
         fromId: user.uid,
         sent: time);
 
-    final ref = firestore
-        .collection('chats/${getConversationID(chatUser.id)}/messages/');
+    final ref = firestore.collection('chats/${getConversationID(chatRoom.id,chatRoom.isGroup?true:false)}/messages/');
     await ref.doc(time).set(message.toJson()).then((value) =>
-        sendPushNotification(chatUser, type == Type.text ? msg : 'image'));
+        sendPushNotification(chatRoom, type == Type.text ? msg : 'image'));
   }
 
   //update read status of message
   static Future<void> updateMessageReadStatus(Message message) async {
     firestore
-        .collection('chats/${getConversationID(message.fromId)}/messages/')
+        .collection('chats/${getConversationID(message.fromId,false)}/messages/')
         .doc(message.sent)
         .update({'read': DateTime.now().millisecondsSinceEpoch.toString()});
   }
 
   //get only last message of a specific chat
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(
-      ChatUser user) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLastMessage(ChatRoom chatRoom) {
     return firestore
-        .collection('chats/${getConversationID(user.id)}/messages/')
+        .collection('chats/${getConversationID(chatRoom.id,chatRoom.isGroup?true:false)}/messages/')
         .orderBy('sent', descending: true)
         .limit(1)
         .snapshots();
   }
 
   //send chat image
-  static Future<void> sendChatImage(ChatUser chatUser, File file) async {
+  static Future<void> sendChatImage(ChatRoom chatRoom, File file) async {
     //getting image file extension
     final ext = file.path.split('.').last;
 
     //storage file ref with path
     final ref = storage.ref().child(
-        'images/${getConversationID(chatUser.id)}/${DateTime.now().millisecondsSinceEpoch}.$ext');
+        'images/${getConversationID(chatRoom.id,chatRoom.isGroup?true:false)}/${DateTime.now().millisecondsSinceEpoch}.$ext');
 
     //uploading image
     await ref
@@ -322,13 +438,13 @@ class APIs {
 
     //updating image in firestore database
     final imageUrl = await ref.getDownloadURL();
-    await sendMessage(chatUser, imageUrl, Type.image);
+    await sendMessage(chatRoom, imageUrl, Type.image);
   }
 
   //delete message
   static Future<void> deleteMessage(Message message) async {
     await firestore
-        .collection('chats/${getConversationID(message.toId)}/messages/')
+        .collection('chats/${getConversationID(message.toId,false)}/messages/')
         .doc(message.sent)
         .delete();
 
@@ -340,7 +456,7 @@ class APIs {
   //update message
   static Future<void> updateMessage(Message message, String updatedMsg) async {
     await firestore
-        .collection('chats/${getConversationID(message.toId)}/messages/')
+        .collection('chats/${getConversationID(message.toId,false)}/messages/')
         .doc(message.sent)
         .update({'msg': updatedMsg});
   }

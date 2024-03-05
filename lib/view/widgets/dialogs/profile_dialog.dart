@@ -9,7 +9,7 @@ import '../../screens/view_profile_screen.dart';
 class ProfileDialog extends StatelessWidget {
   const ProfileDialog({super.key, required this.user});
 
-  final ChatUser user;
+  final ChatRoom user;
 
   @override
   Widget build(BuildContext context) {

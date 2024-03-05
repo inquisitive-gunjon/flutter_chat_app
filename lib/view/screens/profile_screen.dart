@@ -18,7 +18,7 @@ import 'auth/login_screen.dart';
 
 //profile screen -- to show signed in user info
 class ProfileScreen extends StatefulWidget {
-  final ChatUser user;
+  final ChatRoom user;
 
   const ProfileScreen({super.key, required this.user});
 
